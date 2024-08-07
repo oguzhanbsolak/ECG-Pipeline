@@ -14,6 +14,7 @@ from utils.data.data import load_ecgs_from_redcap_snapshot, scale_ecgs, derive_e
 import numpy as np
 from extractors.extractor_schiller import SchillerExtractor
 from extractors.extractor_cardiosoft import CardiosoftExtractor
+from extractors.extractor_mehmetakif import MehmetAkifExtractor
 from utils.data.visualisation import visualiseMulti
 from utils.file.file import checkpathsandmake
 
@@ -45,6 +46,8 @@ class ExecutionRunner:
             self.manufacturer = "Schiller"
         if self.manufacturer == "cardiosoft":
             self.manufacturer = "Cardiosoft"
+        if self.manufacturer == "mehmetakif":
+            self.manufacturer = "MehmetAkif"
 
         self.leads_to_use = config['pdf'].get('leads_to_use')
         self.record_ids_excluded = ''
@@ -163,6 +166,35 @@ class ExecutionRunner:
 
         if self.IS_PDf:
 
+            if self.manufacturer == 'MehmetAkif':
+                path_source = '../data/pdf_data/pdf_mehmetakif/original_ecgs/'
+                path_sink = '../data/pdf_data/pdf_mehmetakif/extracted_ecgs/'
+                clinical_parameters_directory = '../data/pdf_data/pdf_mehmetakif/clinicalparameters/'
+
+                checkpathsandmake(path_sink)
+                checkpathsandmake(path_source)
+                checkpathsandmake(clinical_parameters_directory)
+
+
+                params = {
+                    'ecg_path_sink': path_sink,
+                    'ecg_path_source': path_source,
+                    'number_of_points': self.seconds * self.hz,
+                    'show_visualisation': self.vis_while_extraction,
+                    'vis_scale': self.vis_scale,
+                    'vis_MPL': self.vis_with_MPL,
+                }
+
+                # New extraction
+                if self.new_extraction:
+                    mehmetAkifExtractor = MehmetAkifExtractor(params)
+                    mehmetAkifExtractor.extract()
+                    logging.info('Schiller PDF extraction successful')
+                else:
+                    logging.warning('Please note that no new extraction is performed.')
+
+                original_ecgs = self.load_csv(path_csv=path_sink)
+            
             if self.manufacturer == 'Schiller':
                 path_source = '../data/pdf_data/pdf_schiller/original_ecgs/'
                 path_sink = '../data/pdf_data/pdf_schiller/extracted_ecgs/'
