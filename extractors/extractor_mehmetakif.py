@@ -124,11 +124,21 @@ class MehmetAkifExtractor(AbstractExractor):
         num_pages = reader.getNumPages()
         logging.warning('Number of pages: {}'.format(num_pages))
         if num_pages == 5:
-            pg1 = reader.getPage(2).getContents()._data
-            pg2 = reader.getPage(3).getContents()._data
+            try:
+                pg1 = reader.getPage(2).getContents()._data
+                pg2 = reader.getPage(3).getContents()._data      
+            except:
+                logging.warning('Switching to MUSE(R) format')
+                pg1 = reader.getPage(2).getContents()[0].getObject()._data
+                pg2 = reader.getPage(3).getContents()[0].getObject()._data          
         else:
-            pg1 = reader.getPage(0).getContents()._data
-            pg2 = reader.getPage(1).getContents()._data
+            try:
+                pg1 = reader.getPage(0).getContents()._data
+                pg2 = reader.getPage(1).getContents()._data
+            except:
+                logging.warning('Switching to MUSE(R) format')
+                pg1 = reader.getPage(0).getContents()[0].getObject()._data
+                pg2 = reader.getPage(1).getContents()[0].getObject()._data
         pg1 = preprocess_page_content(pg1)
         pg1 = extract_graphics_string(pg1)
         pg1_leads = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF']
